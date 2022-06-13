@@ -42,7 +42,7 @@ const WalletCard = () => {
 
   setTimeout(() => {
     setReminder(
-      "If unable to connect from button, please login thru the browser"
+      "If unable to connect from button, please login through the browser"
     );
   }, "4500");
 
