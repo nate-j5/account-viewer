@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { ethers } from "ethers";
 import mmLogo from "../assets/mm_logo.png";
 import ethLogo from "../assets/eth_logo.png";
@@ -12,6 +12,7 @@ const WalletCard = () => {
   const [defaultAccount, setDefaultAccount] = useState(null);
   const [userBalance, setUserBalance] = useState(null);
   const [networkName, setNetworkName] = useState("");
+  const [reminder, setReminder] = useState("");
 
   const connectWalletHandler = () => {
     if (window.ethereum) {
@@ -22,6 +23,7 @@ const WalletCard = () => {
         });
     } else {
       setErrorMessage("Install MetaMask");
+      alert(errorMessage);
     }
     window.ethereum.request({ method: "net_version" }).then((chainID) => {
       chainID === "1"
@@ -38,13 +40,19 @@ const WalletCard = () => {
     });
   };
 
-  //  ACCOUNT CHANGE FROM CONNECTED WALLET
+  setTimeout(() => {
+    setReminder(
+      "If unable to connect from button, please login thru the browser"
+    );
+  }, "4500");
+
+  //  Account Change from Connected Wallet
   const accountChangedHandler = (newAccount) => {
     setDefaultAccount(newAccount);
     getAccountBalance(newAccount.toString());
   };
 
-  // GET ACCOUNT BALANCE
+  // Get Account Balance
   const getAccountBalance = (account) => {
     window.ethereum
       .request({ method: "eth_getBalance", params: [account, "latest"] })
@@ -56,20 +64,18 @@ const WalletCard = () => {
       });
   };
 
-  // DISCONNECT WALLET
   const disconnectWallet = () => {
     window.location.reload();
   };
 
-  // LISTEN FOR CHAIN CHANGE
   const chainChangedHandler = () => {
     window.location.reload();
   };
 
-  //  LISTEN FOR ACCOUNT CHANGE
-  window.ethereum.on("accountsChanged", accountChangedHandler);
+  //  Listen for account change and disconnect
+  window.ethereum.on("accountsChanged", chainChangedHandler);
 
-  // LISTEN FOR CHAIN CHANGE
+  // Listen for chain change and disconnect
   window.ethereum.on("chainChanged", chainChangedHandler);
 
   return (
@@ -79,15 +85,15 @@ const WalletCard = () => {
           <img
             className="img"
             src={
-              networkName === "Ethereum Main Network"
+              networkName === "Ethereum Main Network" && defaultAccount
                 ? ethLogo
-                : networkName === "Ropsten Test Network"
+                : networkName === "Ropsten Test Network" && defaultAccount
                 ? rIcon
-                : networkName === "Rinkeby Test Network"
+                : networkName === "Rinkeby Test Network" && defaultAccount
                 ? rink
-                : networkName === "Goerli Test Network"
+                : networkName === "Goerli Test Network" && defaultAccount
                 ? goerli
-                : networkName === "Kovan Test Network"
+                : networkName === "Kovan Test Network" && defaultAccount
                 ? kovan
                 : mmLogo
             }
@@ -98,7 +104,8 @@ const WalletCard = () => {
 
         <div className="card-text-container">
           <h1 className="card-title">
-            {networkName ? `${networkName}` : "MetaMask Wallet Connector"}
+            {" "}
+            {defaultAccount ? `${networkName}` : "MetaMask Wallet Connector"}
           </h1>
 
           <h2 className="card-text-balance">
@@ -132,6 +139,7 @@ const WalletCard = () => {
               ""
             )}
           </div>
+          {defaultAccount ? "" : <p className="reminder-text">{reminder}</p>}
         </div>
       </div>
     </div>
